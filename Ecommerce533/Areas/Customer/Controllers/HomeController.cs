@@ -6,8 +6,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;
 
-namespace Ecommerce533.Controllers
+namespace Ecommerce533.Areas.Customer.Controllers
 {
+    [Area("Customer")]
     public class HomeController : Controller
     {
         private readonly ApplicationDbContext _context = new ApplicationDbContext();  
