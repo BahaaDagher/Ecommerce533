@@ -1,3 +1,6 @@
+using Ecommerce533.Data;
+using Microsoft.EntityFrameworkCore;
+
 namespace Ecommerce533
 {
     public class Program
@@ -8,6 +11,23 @@ namespace Ecommerce533
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
+
+            var connectionString = 
+                builder.Configuration.GetConnectionString("DefaultConnection")
+                    ?? throw new InvalidOperationException("Connection string"
+                    + "'DefaultConnection' not found.");
+
+            builder.Services.AddDbContext<ApplicationDbContext>(options =>
+                options.UseSqlServer(connectionString)
+                );
+            // Life time
+            //  AddTrasient , AddScoped , AddSinglton 
+
+            builder.Services.AddScoped<IRepository<Product> , Repository<Product>>(); 
+            builder.Services.AddScoped<IRepository<Category> , Repository<Category>>(); 
+            builder.Services.AddScoped<IRepository<Brand> , Repository<Brand>>(); 
+            builder.Services.AddScoped<IProductSubImageRepository , ProductSubImageRepository>(); 
+            builder.Services.AddScoped<IProductColorRepository , ProductColorRepository>(); 
 
             var app = builder.Build();
 
@@ -27,7 +47,7 @@ namespace Ecommerce533
             app.MapStaticAssets();
             app.MapControllerRoute(
                 name: "default",
-                pattern: "{area=Admin}/{controller=Brand}/{action=Index}/{id?}")
+                pattern: "{area=Admin}/{controller=Category}/{action=Index}/{id?}")
                 .WithStaticAssets();
 
             app.Run();
