@@ -1,4 +1,7 @@
 using Ecommerce533.Data;
+using Ecommerce533.Utilities;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace Ecommerce533
@@ -20,14 +23,28 @@ namespace Ecommerce533
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(connectionString)
                 );
+
+            builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+            {
+                options.User.RequireUniqueEmail = true;
+                options.SignIn.RequireConfirmedEmail = true;
+                //options.Lockout.MaxFailedAccessAttempts =10;
+                //options.Password 
+                //options.SignIn
+            })
+            .AddEntityFrameworkStores<ApplicationDbContext>()
+            .AddDefaultTokenProviders();
+
             // Life time
             //  AddTrasient , AddScoped , AddSinglton 
 
             builder.Services.AddScoped<IRepository<Product> , Repository<Product>>(); 
             builder.Services.AddScoped<IRepository<Category> , Repository<Category>>(); 
             builder.Services.AddScoped<IRepository<Brand> , Repository<Brand>>(); 
+            builder.Services.AddScoped<IRepository<ApplicationUserOtp> , Repository<ApplicationUserOtp>>(); 
             builder.Services.AddScoped<IProductSubImageRepository , ProductSubImageRepository>(); 
             builder.Services.AddScoped<IProductColorRepository , ProductColorRepository>(); 
+            builder.Services.AddTransient<IEmailSender , EmailSender>(); 
 
             var app = builder.Build();
 
@@ -47,7 +64,7 @@ namespace Ecommerce533
             app.MapStaticAssets();
             app.MapControllerRoute(
                 name: "default",
-                pattern: "{area=Admin}/{controller=Category}/{action=Index}/{id?}")
+                pattern: "{area=Identity}/{controller=Account}/{action=Register}/{id?}")
                 .WithStaticAssets();
 
             app.Run();
