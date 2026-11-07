@@ -1,14 +1,17 @@
 using Ecommerce533.Data;
 using Ecommerce533.Utilities;
+using Ecommerce533.Utilities.DbSeeding;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
+using Stripe;
 
 namespace Ecommerce533
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -35,18 +38,37 @@ namespace Ecommerce533
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddDefaultTokenProviders();
 
+
+
+            builder.Services.ConfigureApplicationCookie(options =>
+            {
+                // Redirect paths
+                options.LoginPath = "/Identity/Account/Login";               // Where to redirect unauthenticated users
+                options.AccessDeniedPath = "/Identity/Account/AccessDenied"; // Where to redirect forbidden users
+            });
+
+
             // Life time
             //  AddTrasient , AddScoped , AddSinglton 
 
-            builder.Services.AddScoped<IRepository<Product> , Repository<Product>>(); 
+            builder.Services.AddScoped<IRepository<Models.Product> , Repository<Models.Product>>(); 
             builder.Services.AddScoped<IRepository<Category> , Repository<Category>>(); 
             builder.Services.AddScoped<IRepository<Brand> , Repository<Brand>>(); 
+            builder.Services.AddScoped<IRepository<Cart> , Repository<Cart>>(); 
             builder.Services.AddScoped<IRepository<ApplicationUserOtp> , Repository<ApplicationUserOtp>>(); 
             builder.Services.AddScoped<IProductSubImageRepository , ProductSubImageRepository>(); 
             builder.Services.AddScoped<IProductColorRepository , ProductColorRepository>(); 
             builder.Services.AddTransient<IEmailSender , EmailSender>(); 
+            builder.Services.AddScoped<IDbInitializer , DbInitializer>();
 
+
+            StripeConfiguration.ApiKey = builder.Configuration["Stripe:SecretKey"];
             var app = builder.Build();
+            using (var scope = app.Services.CreateScope())
+            {
+                var dbInitializer = scope.ServiceProvider.GetRequiredService<IDbInitializer>();
+                await dbInitializer.InitializeAsync(); 
+            }
 
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
@@ -64,7 +86,7 @@ namespace Ecommerce533
             app.MapStaticAssets();
             app.MapControllerRoute(
                 name: "default",
-                pattern: "{area=Identity}/{controller=Account}/{action=Register}/{id?}")
+                pattern: "{area=Customer}/{controller=Home}/{action=Index}/{id?}")
                 .WithStaticAssets();
 
             app.Run();

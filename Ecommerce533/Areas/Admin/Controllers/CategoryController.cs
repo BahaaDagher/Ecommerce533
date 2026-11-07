@@ -1,11 +1,14 @@
 ﻿using Ecommerce533.Data;
 using Ecommerce533.Models;
+
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Ecommerce533.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [Authorize(Roles = $"{CD.SUPER_ADMIN} , {CD.ADMIN} , {CD.EMPLOYEE}")]
     public class CategoryController : Controller
     {
         //private readonly ApplicationDbContext _context = new ApplicationDbContext(); 
@@ -46,6 +49,7 @@ namespace Ecommerce533.Areas.Admin.Controllers
             return RedirectToAction(nameof(Index));
         }
         [HttpGet]
+        [Authorize(Roles = $"{CD.SUPER_ADMIN} , {CD.ADMIN}")]
         public async Task<IActionResult> Update(int id)
         {
             //var category = _context.Categories.FirstOrDefault(c=> c.Id == id ); 
@@ -57,6 +61,7 @@ namespace Ecommerce533.Areas.Admin.Controllers
             return View(category);
         }
         [HttpPost]
+        [Authorize(Roles = $"{CD.SUPER_ADMIN} , {CD.ADMIN}")]
         public async Task<IActionResult> Update(Category category)
         {
             //_context.Categories.Update(category);
@@ -65,6 +70,7 @@ namespace Ecommerce533.Areas.Admin.Controllers
             await _categoryRepository.CommitAsync(); 
             return RedirectToAction(nameof(Index));
         }
+        [Authorize(Roles = $"{CD.SUPER_ADMIN} , {CD.ADMIN}")]
         public async Task<IActionResult> Delete(int id)
         {
             //var category = _context.Categories.FirstOrDefault(c=>c.Id == id); 

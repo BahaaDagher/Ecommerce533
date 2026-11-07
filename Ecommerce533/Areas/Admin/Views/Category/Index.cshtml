@@ -42,10 +42,20 @@
                                     </span>
                                 }
                             </td>
-                            <td>
-                                <a href="/Admin/Category/Update/@item.Id" type="button" class="btn btn-warning">Edit</a>
-                                <a href="/Admin/Category/Delete/@item.Id" class="btn btn-danger btn-delete">Delete</a>
-                            </td>
+                            @if (User.IsInRole(CD.SUPER_ADMIN) || User.IsInRole(CD.ADMIN))
+                            {
+                                <td>
+                                    <a href="/Admin/Category/Update/@item.Id" type="button" class="btn btn-warning">Edit</a>
+                                    <a href="/Admin/Category/Delete/@item.Id" class="btn btn-danger btn-delete">Delete</a>
+                                </td>
+                            }
+                            else
+                            {
+                                <td>
+                                    No Actions !!! 
+                                </td>
+                                
+                            }
 
                         </tr>
                     }

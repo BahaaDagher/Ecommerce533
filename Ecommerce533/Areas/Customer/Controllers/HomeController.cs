@@ -1,6 +1,7 @@
 using Ecommerce533.Data;
 using Ecommerce533.Models;
 using Ecommerce533.ViewModels;
+using Mapster;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -12,16 +13,18 @@ namespace Ecommerce533.Areas.Customer.Controllers
     public class HomeController : Controller
     {
         private readonly ApplicationDbContext _context;//= new ApplicationDbContext();  
+        private readonly IRepository<Product> _productRepository;//= new ApplicationDbContext();  
 
-        public HomeController(ApplicationDbContext context)
+        public HomeController(ApplicationDbContext context, IRepository<Product> productRepository)
         {
             _context = context;
+            _productRepository = productRepository;
         }
-
-        public IActionResult Index(FilterProductVM  filter) 
+        public async Task<IActionResult> Index(FilterProductVM  filter) 
         {
-            var products = _context.Products.AsQueryable();
-            products = products.Include(p => p.Category);
+            //var products = _context.Products.AsQueryable();
+            //products = products.Include(p => p.Category);
+            var products = await _productRepository.GetListAsync(includes: [p=>p.Category]);
             // filter 
             if (filter.ProductName != null)
             {
@@ -68,7 +71,23 @@ namespace Ecommerce533.Areas.Customer.Controllers
 
             return View(products.ToList());
         }
-        
+        public async Task<IActionResult> ProductDetails(int id )
+        {
+            var product = await _productRepository.GetOneAsync(p=>p.Id == id , includes:[p=>p.Category]);
+            if (product is null) return NotFound();
+
+            var relatedProducts = await _productRepository.GetListAsync(
+                p=>p.CategoryId == product.CategoryId &&
+                p.Id != product.Id
+                );
+            relatedProducts = relatedProducts.Skip(0).Take(4); 
+
+            return View(new ProductWithRelatedVM()
+            {
+                Product = product,
+                RelatedProducts = relatedProducts
+            });
+        }
         public IActionResult Privacy()
         {
             return View();

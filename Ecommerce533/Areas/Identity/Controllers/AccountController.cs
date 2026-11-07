@@ -61,6 +61,7 @@ namespace Ecommerce533.Areas.Identity.Controllers
                 ); 
 
             TempData["Successful_Notification"] = "Registration Successfully";
+            await _userManager.AddToRoleAsync(user , CD.CUSTOMER); 
             return RedirectToAction(nameof(Login));
         }
         [HttpGet]
@@ -98,7 +99,7 @@ namespace Ecommerce533.Areas.Identity.Controllers
             {
                 if (result.IsLockedOut)
                 {
-                    ModelState.AddModelError("", "to many attempts pls try again later");
+                    ModelState.AddModelError("", "You are Locked pls try again later");
                 }
                 else if (result.IsNotAllowed)
                 {
@@ -113,6 +114,12 @@ namespace Ecommerce533.Areas.Identity.Controllers
             }
             TempData["Successful_Notification"] = "Login Successfully";
             return RedirectToAction("Index" , "Home" , new { area = "Customer"});
+        }
+        [HttpGet]
+        public async Task<IActionResult> Logout()
+        {
+            await _signInManager.SignOutAsync();
+            return RedirectToAction(nameof(Login)); 
         }
         [HttpGet]
         public IActionResult ResendEmailConfirmation()
@@ -236,6 +243,12 @@ namespace Ecommerce533.Areas.Identity.Controllers
 
             TempData["Successful_Notification"] = "Reset Password Successfully";
             return RedirectToAction(nameof(Login));
+        }
+
+        [HttpGet]
+        public IActionResult AccessDenied()
+        {
+            return View();
         }
 
     }
